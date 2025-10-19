@@ -94,55 +94,98 @@ private fun RaceTrackerScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.run_a_race),
-            style = MaterialTheme.typography.headlineSmall,
+        RaceHeader()
+        RaceContent(
+            playerOne = playerOne,
+            playerTwo = playerTwo,
+            isRunning = isRunning,
+            onRunStateChange = onRunStateChange
         )
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(dimensionResource(R.dimen.padding_medium)),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_walk),
-                contentDescription = null,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
-            )
-            StatusIndicator(
-                participantName = playerOne.name,
-                currentProgress = playerOne.currentProgress,
-                maxProgress = stringResource(
-                    R.string.progress_percentage,
-                    playerOne.maxProgress
-                ),
-                progressFactor = playerOne.progressFactor,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
-            StatusIndicator(
-                participantName = playerTwo.name,
-                currentProgress = playerTwo.currentProgress,
-                maxProgress = stringResource(
-                    R.string.progress_percentage,
-                    playerTwo.maxProgress
-                ),
-                progressFactor = playerTwo.progressFactor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
-            RaceControls(
-                isRunning = isRunning,
-                onRunStateChange = onRunStateChange,
-                onReset = {
-                    playerOne.reset()
-                    playerTwo.reset()
-                    onRunStateChange(false)
-                },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+    }
+}
+
+@Composable
+private fun RaceHeader() {
+    Text(
+        text = stringResource(R.string.run_a_race),
+        style = MaterialTheme.typography.headlineSmall,
+    )
+}
+
+@Composable
+private fun RaceContent(
+    playerOne: RaceParticipant,
+    playerTwo: RaceParticipant,
+    isRunning: Boolean,
+    onRunStateChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(dimensionResource(R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        RaceIcon()
+        PlayersProgress(
+            playerOne = playerOne,
+            playerTwo = playerTwo
+        )
+        RaceControls(
+            isRunning = isRunning,
+            onRunStateChange = onRunStateChange,
+            onReset = {
+                playerOne.reset()
+                playerTwo.reset()
+                onRunStateChange(false)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun RaceIcon() {
+    Icon(
+        painter = painterResource(R.drawable.ic_walk),
+        contentDescription = null,
+        modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
+    )
+}
+
+@Composable
+private fun PlayersProgress(
+    playerOne: RaceParticipant,
+    playerTwo: RaceParticipant,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        StatusIndicator(
+            participantName = playerOne.name,
+            currentProgress = playerOne.currentProgress,
+            maxProgress = stringResource(
+                R.string.progress_percentage,
+                playerOne.maxProgress
+            ),
+            progressFactor = playerOne.progressFactor,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
+        StatusIndicator(
+            participantName = playerTwo.name,
+            currentProgress = playerTwo.currentProgress,
+            maxProgress = stringResource(
+                R.string.progress_percentage,
+                playerTwo.maxProgress
+            ),
+            progressFactor = playerTwo.progressFactor,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
     }
 }
 
@@ -157,36 +200,79 @@ private fun StatusIndicator(
     Row(
         modifier = modifier
     ) {
-        Text(
-            text = participantName,
-            modifier = Modifier.padding(end = dimensionResource(R.dimen.padding_small))
+        ParticipantName(name = participantName)
+        ProgressSection(
+            currentProgress = currentProgress,
+            maxProgress = maxProgress,
+            progressFactor = progressFactor
         )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
-        ) {
-            LinearProgressIndicator(
-                progress = progressFactor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dimensionResource(R.dimen.progress_indicator_height))
-                    .clip(RoundedCornerShape(dimensionResource(R.dimen.progress_indicator_corner_radius)))
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(R.string.progress_percentage, currentProgress),
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = maxProgress,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
+    }
+}
+
+@Composable
+private fun ParticipantName(
+    name: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = name,
+        modifier = modifier.padding(end = dimensionResource(R.dimen.padding_small))
+    )
+}
+
+@Composable
+private fun ProgressSection(
+    currentProgress: Int,
+    maxProgress: String,
+    progressFactor: Float,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
+    ) {
+        ProgressBar(progressFactor = progressFactor)
+        ProgressLabels(
+            currentProgress = currentProgress,
+            maxProgress = maxProgress
+        )
+    }
+}
+
+@Composable
+private fun ProgressBar(
+    progressFactor: Float,
+    modifier: Modifier = Modifier
+) {
+    LinearProgressIndicator(
+        progress = progressFactor,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(dimensionResource(R.dimen.progress_indicator_height))
+            .clip(RoundedCornerShape(dimensionResource(R.dimen.progress_indicator_corner_radius)))
+    )
+}
+
+@Composable
+private fun ProgressLabels(
+    currentProgress: Int,
+    maxProgress: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = stringResource(R.string.progress_percentage, currentProgress),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = maxProgress,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
