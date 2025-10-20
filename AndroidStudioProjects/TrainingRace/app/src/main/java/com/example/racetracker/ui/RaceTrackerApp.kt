@@ -317,7 +317,7 @@ private fun RaceControls(
 
 @Preview(showBackground = true)
 @Composable
-fun RaceTrackerAppPreview() {
+private fun RaceTrackerAppPreview() {
     RaceTrackerTheme {
         RaceTrackerApp()
     }
